@@ -53,6 +53,20 @@ export default class UIScene extends Phaser.Scene {
     this.setCombo(this.gameScene.score.multiplier);
 
     this.subscribe();
+
+    // Ao pausar, esconde o aviso central para não poluir a tela de pausa.
+    const announceTexts = [this.announceTitle, this.announceSubtitle];
+    const onPause = () => {
+      this.hiddenOnPause = announceTexts.filter((t) => t.visible);
+      this.hiddenOnPause.forEach((t) => t.setVisible(false));
+    };
+    const onResume = () => this.hiddenOnPause?.forEach((t) => t.setVisible(true));
+    this.events.on(Phaser.Scenes.Events.PAUSE, onPause);
+    this.events.on(Phaser.Scenes.Events.RESUME, onResume);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.events.off(Phaser.Scenes.Events.PAUSE, onPause);
+      this.events.off(Phaser.Scenes.Events.RESUME, onResume);
+    });
   }
 
   /** Liga os ouvintes de eventos e garante que sejam removidos ao sair. */

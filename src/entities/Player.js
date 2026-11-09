@@ -30,7 +30,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     this.setCollideWorldBounds(true);
     // Limita a nave à parte de baixo da tela (retângulo próprio de limites).
     this.body.setBoundsRectangle(
-      new Phaser.Geom.Rectangle(0, PLAYER.minY, GAME_WIDTH, GAME_HEIGHT - PLAYER.minY),
+      new Phaser.Geom.Rectangle(0, PLAYER.minY, GAME_WIDTH, GAME_HEIGHT - PLAYER.minY - PLAYER.bottomMargin),
     );
     // Hitbox circular menor que o desenho: o jogador sente que "passou raspando".
     this.body.setCircle(12, 12, 16);

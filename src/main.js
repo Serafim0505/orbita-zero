@@ -57,6 +57,7 @@ if (new URLSearchParams(window.location.search).get('debug') === '1') {
     gameState: () => gameScene().gameState,
     score: () => gameScene().score?.score ?? 0,
     lives: () => gameScene().lives,
+    enemies: () => gameScene().countActiveEnemies(),
     forceGameOver: () => gameScene().debugForceGameOver(),
     skipToBoss: () => gameScene().debugSkipToBoss(),
     forceVictory: () => gameScene().debugForceVictory(),

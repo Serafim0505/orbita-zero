@@ -62,6 +62,7 @@ export const PLAYER = {
   drag: 1150, // px/s² de "atrito" quando solta a tecla
   maxSpeed: 360, // px/s
   minY: GAME_HEIGHT * 0.42, // a nave só circula na parte de baixo da tela
+  bottomMargin: 34, // espaço livre embaixo para a nave e a chama não ficarem cortadas
   fireRate: 170, // ms entre tiros (cadência limitada)
   bulletSpeed: 720,
   tripleSpreadDeg: 12, // abertura do tiro triplo
