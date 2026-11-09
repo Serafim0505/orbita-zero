@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import {
   GAME_WIDTH, GAME_HEIGHT, PLAYER, POOL, POWERUP, COLORS, CSS_COLORS,
-  GAME_STATES, VICTORY_LIFE_BONUS,
+  GAME_STATES, VICTORY_LIFE_BONUS, BOSS,
 } from '../config.js';
 import Player from '../entities/Player.js';
 import Bullet from '../entities/Bullet.js';
@@ -10,6 +10,7 @@ import ZigZagEnemy from '../entities/ZigZagEnemy.js';
 import ShooterEnemy from '../entities/ShooterEnemy.js';
 import Asteroid from '../entities/Asteroid.js';
 import PowerUp, { POWERUP_TYPES } from '../entities/PowerUp.js';
+import Boss from '../entities/Boss.js';
 import WaveManager from '../systems/WaveManager.js';
 import ScoreManager from '../systems/ScoreManager.js';
 import Starfield from '../systems/Starfield.js';
@@ -33,6 +34,7 @@ export default class GameScene extends Phaser.Scene {
     this.gameState = null;
     this.lives = PLAYER.lives;
     this.ending = false;
+    this.boss = null;
 
     this.starfield = new Starfield(this);
     this.effects = new Effects(this);
@@ -237,6 +239,55 @@ export default class GameScene extends Phaser.Scene {
   }
 
   // ---------------------------------------------------------------------------
+  // Chefe (onda 10)
+  // ---------------------------------------------------------------------------
+  startBoss() {
+    this.boss = new Boss(this, GAME_WIDTH / 2, -70);
+    // [CONCEITO 4 - COLISÕES] Colisões do chefe são registradas só quando ele existe.
+    this.physics.add.overlap(this.boss, this.playerBullets, this.onBulletHitBoss, null, this);
+    this.physics.add.overlap(this.player, this.boss, this.onPlayerTouchBoss, null, this);
+    this.setGameState(GAME_STATES.BOSS);
+    this.events.emit('boss-spawned', this.boss.hp, this.boss.maxHp);
+  }
+
+  onBulletHitBoss(boss, bullet) {
+    if (!bullet.active || !boss.isVulnerable()) return;
+    bullet.despawn();
+    this.effects.spark(bullet.x, bullet.y, boss.hp % 2 ? 0xffffff : boss.color);
+    if (!boss.takeHit(1)) audio.play('hit');
+  }
+
+  onPlayerTouchBoss(player) {
+    if (player.canBeHit()) this.damagePlayer();
+  }
+
+  // [CONCEITO 5 - VITÓRIA] Chamado pelo Boss ao fim da animação de morte.
+  onBossDefeated() {
+    if (this.isOver) return;
+    this.setGameState(GAME_STATES.VICTORY);
+    this.waves.stop();
+    const gained = this.score.addKill(BOSS.score);
+    this.effects.floatingText(this.boss.x, this.boss.y, `+${gained}`, CSS_COLORS.yellow, 30);
+    this.events.emit('boss-defeated');
+    this.clearHazards();
+    this.player.setAcceleration(0, 0);
+    audio.play('victory');
+    this.time.delayedCall(2600, () => this.endGame(true));
+  }
+
+  /** Explode todos os inimigos e apaga os tiros inimigos da tela. */
+  clearHazards() {
+    [...this.allEnemyGroups, this.asteroids].forEach((group) => {
+      group.getChildren().forEach((enemy) => {
+        if (enemy.active) this.destroyEnemy(enemy, false);
+      });
+    });
+    this.enemyBullets.getChildren().forEach((bullet) => {
+      if (bullet.active) bullet.despawn();
+    });
+  }
+
+  // ---------------------------------------------------------------------------
   // [CONCEITO 5 - VIDAS E DERROTA]
   // ---------------------------------------------------------------------------
   damagePlayer() {
@@ -315,6 +366,12 @@ export default class GameScene extends Phaser.Scene {
     this.lives = 0;
     this.events.emit('lives-changed', this.lives);
     this.killPlayer();
+  }
+
+  debugSkipToBoss() {
+    if (this.isOver || this.boss) return;
+    this.clearHazards();
+    this.waves.jumpToBoss();
   }
 
   debugForceVictory() {
