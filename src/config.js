@@ -36,8 +36,8 @@ export const CSS_COLORS = {
 
 // Ordem de desenho (quanto maior, mais "na frente").
 export const DEPTH = {
-  nebula: 1,
-  stars: 2,
+  nebula: -3, // fundo negativo: fica atrás de textos e painéis (profundidade 0)
+  stars: -2,
   powerUps: 8,
   asteroids: 9,
   enemies: 10,
