@@ -49,7 +49,7 @@ test('fluxo completo: menu → jogo → pausa → game over → chefe → vitór
   await waitForScene(page, 'GameScene');
 
   // 4) ~20 s de jogo simulado: segura Espaço (tiro) e alterna direções
-  // O screenshot de gameplay é tirado quando há vários inimigos na tela.
+  // O screenshot de gameplay é tirado quando há vários inimigos na tela e já há pontos.
   const moves = ['ArrowLeft', 'KeyD', 'ArrowRight', 'KeyA', 'ArrowUp', 'KeyS'];
   let gameplayShot = false;
   await page.keyboard.down('Space');
@@ -59,7 +59,8 @@ test('fluxo completo: menu → jogo → pausa → game over → chefe → vitór
     await page.waitForTimeout(500);
     if (i % 2 === 1) await page.keyboard.up(key);
     const inGame = (await activeScenes(page)).includes('GameScene');
-    if (!gameplayShot && i >= 12 && inGame && (await page.evaluate(() => window.__ORBITA__.enemies())) >= 4) {
+    const busy = inGame && (await page.evaluate(() => window.__ORBITA__.enemies() >= 3 && window.__ORBITA__.score() >= 200));
+    if (!gameplayShot && i >= 16 && (busy || (inGame && i === 39))) {
       await shot(page, 'gameplay');
       gameplayShot = true;
     }

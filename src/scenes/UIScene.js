@@ -41,7 +41,9 @@ export default class UIScene extends Phaser.Scene {
     this.createBossBar();
     this.createAnnouncement();
 
-    this.add.text(20, GAME_HEIGHT - 26, 'P/ESC pausa  ·  N som', textStyle(13, CSS_COLORS.muted)).setAlpha(0.7);
+    // Dica de teclas: some depois de alguns segundos para não atrapalhar a nave.
+    const hint = this.add.text(20, GAME_HEIGHT - 26, 'P/ESC pausa  ·  N som', textStyle(13, CSS_COLORS.muted)).setAlpha(0.7);
+    this.tweens.add({ targets: hint, alpha: 0, delay: 10000, duration: 1000 });
     this.soundToast = this.add
       .text(GAME_WIDTH - 20, GAME_HEIGHT - 26, '', textStyle(13, CSS_COLORS.cyan, { fontStyle: 'bold' }))
       .setOrigin(1, 0)
