@@ -7,3 +7,4 @@ playwright/.cache/
 .DS_Store
 .claude/
 *.zip
+README.md
